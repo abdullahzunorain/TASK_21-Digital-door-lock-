@@ -1,0 +1,69 @@
+C51 COMPILER V9.60.7.0   KEY_PAD                                                           09/19/2024 12:25:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY_PAD
+OBJECT MODULE PLACED IN .\Objects\KEY_PAD.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE KEY_PAD.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\K
+                    -EY_PAD.lst) TABS(2) OBJECT(.\Objects\KEY_PAD.obj)
+
+line level    source
+
+   1          #include "KEY_PAD.h"
+   2          #include "BUZZER.h"
+   3          #include "LCD.h"
+   4          
+   5          unsigned int second_count = 0;
+   6          
+   7          unsigned char READ_SWITCHES(void)
+   8          {
+   9   1        row_1 = 0; row_2 = 1; row_3 = 1; row_4 = 1;
+  10   1        if (C1 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C1==0); return '/'; } 
+  11   1        if (C2 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C2==0); return '9'; } 
+  12   1        if (C3 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C3==0); return '8'; } 
+  13   1        if (C4 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C4==0); return '7'; }
+  14   1        
+  15   1        row_1 = 1; row_2 = 0; row_3 = 1; row_4 = 1;
+  16   1        
+  17   1        if (C1 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C1==0); return 'x'; } 
+  18   1        if (C2 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C2==0); return '6'; } 
+  19   1        if (C3 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C3==0); return '5'; } 
+  20   1        if (C4 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C4==0); return '4'; }
+  21   1        
+  22   1        row_1 = 1; row_2 = 1; row_3 = 0; row_4 = 1;
+  23   1        
+  24   1        if (C1 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C1==0); return '-'; } 
+  25   1        if (C2 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C2==0); return '3'; } 
+  26   1        if (C3 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C3==0); return '2'; } 
+  27   1        if (C4 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C4==0); return '1'; }
+  28   1        
+  29   1        row_1 = 1; row_2 = 1; row_3 = 1; row_4 = 0;
+  30   1        
+  31   1        if (C1 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C1==0); return '+'; }
+  32   1        if (C3 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C3==0); return '0'; }
+  33   1        if (C2 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C2==0) { second_count ++; ms_delay(400)
+             -;}
+  34   2        if(second_count >= 10) { second_count = 0; return 'R'; }
+  35   2        else if(second_count < 10) { second_count = 0; return '='; } } 
+  36   1         
+  37   1        if (C4 == 0) { buzzer_sound(500,0xFF,0xA3); ms_delay(100); while (C4 == 0) { second_count ++; ms_delay(30
+             -0); }
+  38   2        if(second_count >= 10) { second_count = 0; return 'N'; }
+  39   2        else if(second_count < 10) { second_count = 0; return 'c'; } }
+  40   1        return 'n';
+  41   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    569    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.60.7.0   KEY_PAD                                                           09/19/2024 12:25:00 PAGE 2   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

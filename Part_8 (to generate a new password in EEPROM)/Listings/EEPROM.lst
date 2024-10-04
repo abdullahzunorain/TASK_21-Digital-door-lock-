@@ -1,0 +1,147 @@
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:43:33 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE EEPROM
+OBJECT MODULE PLACED IN .\Objects\EEPROM.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE EEPROM.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\EE
+                    -PROM.lst) TABS(2) OBJECT(.\Objects\EEPROM.obj)
+
+line level    source
+
+   1          # include <reg52.h>
+   2          # include "EEPROM.h"
+   3          # include <intrins.h>
+   4          # include "LCD.h"
+   5          # include "Keypad.h"
+   6          sbit SDA= P2^0;
+   7          sbit SCL= P2^1;
+   8          
+   9          unsigned char a,b,Data;
+  10          bit ack;
+  11          void Delay_ms(unsigned int x)       
+  12          {    
+  13   1        unsigned int y,z;
+  14   1          for(y=0;y<=x;y++)
+  15   1              for(z=0;z<=113;z++);
+  16   1      }
+  17          void Start_Data ()              
+  18          { 
+  19   1        SDA=1;                          
+  20   1        _nop_();_nop_();
+  21   1        SCL=1;
+  22   1        _nop_();_nop_();
+  23   1        SDA=0;
+  24   1        _nop_();_nop_();
+  25   1        
+  26   1      }
+  27          void Restart ()                         
+  28          {
+  29   1        SCL=0;
+  30   1        SDA=1;
+  31   1        SCL=1;
+  32   1        SDA=0;
+  33   1      }
+  34          void Stop_Data ()                       
+  35          { 
+  36   1        SCL=0;                                  
+  37   1        SDA=0;
+  38   1        SCL=1;
+  39   1        SDA=1;
+  40   1        
+  41   1      }
+  42          
+  43          void aknowledge()                    
+  44          {
+  45   1        SCL=0;                        
+  46   1        SDA=1;
+  47   1        SCL=1;
+  48   1        while(SDA);
+  49   1      }
+  50          
+  51          void NO_aknowledge()               
+  52          {
+  53   1        SCL=0;
+  54   1        SDA=1;
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:43:33 PAGE 2   
+
+  55   1        SCL=1;
+  56   1      }
+  57          
+  58          void SendByte (unsigned int Value)             
+  59          {
+  60   1          
+  61   1         for(a=0;a<8;a++)
+  62   1        {   
+  63   2          SCL=0;
+  64   2          SDA=(Value&(0x80>>a))?1:0;                  //Send the MSB first
+  65   2          SCL=1;
+  66   2        } 
+  67   1      }
+  68          
+  69          unsigned char ReadByte ()                  
+  70          {  
+  71   1            Data=0;
+  72   1        
+  73   1        for(b=0;b<8;b++)
+  74   1        {  
+  75   2         SCL=0;
+  76   2         SCL=1;
+  77   2         if(SDA)
+  78   2          Data|=(0x80>>b);                          //Send the MSB first  
+  79   2        }
+  80   1          
+  81   1         return Data;
+  82   1      }
+  83          
+  84          
+  85          void EEPROM_Write (unsigned char address_W ,unsigned char Data)    // EEPROM Write Function
+  86          {
+  87   1        Start_Data ();               //Intialize Data Transfer 
+  88   1        SendByte(0xA0);              // A0=A1=A2=0 Control Byte
+  89   1        aknowledge();                //Acknowledge
+  90   1        SendByte(address_W);         // Send Adress of EEPROM location
+  91   1        aknowledge();                //Acknowledge
+  92   1        SendByte(Data);              //Send Byte of data
+  93   1        aknowledge();                //Acknowledge
+  94   1        Stop_Data () ;               //Stop Data Transfer
+  95   1        Delay_ms(10);                 // Small Delay
+  96   1      }
+  97          
+  98          
+  99          unsigned char EEPROM_Read (unsigned char address_R)                 // EEPROM Read fdunction
+ 100          {  
+ 101   1        unsigned char Data;
+ 102   1        Start_Data ();                                    
+ 103   1        SendByte(0xA0);                       //Send Write Control Byte to write the Address
+ 104   1        aknowledge();                        
+ 105   1        SendByte(address_R);                  //Send the Data from where Data read
+ 106   1        aknowledge();                        
+ 107   1        Restart();                            //Re-intialize data Transfer in Order To read Data 
+ 108   1        SendByte(0xA1);                       //Send Control Byte To Read data 
+ 109   1        aknowledge();                         
+ 110   1        Data= ReadByte ();                    //Pick the Data from EEPROm Register and Store in Temporarry Regis
+             -ters
+ 111   1        NO_aknowledge();                      
+ 112   1        Stop_Data ();                         //Stop Data Transfer   
+ 113   1        
+ 114   1      return Data;                            //Return the data stored in Temporary Register
+ 115   1      }
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:43:33 PAGE 3   
+
+ 116          
+ 117          
+ 118          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    237    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

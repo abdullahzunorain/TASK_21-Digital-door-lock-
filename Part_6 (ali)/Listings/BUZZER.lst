@@ -1,0 +1,59 @@
+C51 COMPILER V9.60.7.0   BUZZER                                                            09/19/2024 12:25:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE BUZZER
+OBJECT MODULE PLACED IN .\Objects\BUZZER.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BUZZER.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\BU
+                    -ZZER.lst) TABS(2) OBJECT(.\Objects\BUZZER.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <BUZZER.h>
+   3          #include <intrins.h>
+   4          
+   5          void delay(unsigned char p,unsigned char q)
+   6          {
+   7   1        TMOD=0x01;           //timer0 mode1(16 bit)
+   8   1        TL0=q;               //load TL0
+   9   1        TH0=p;               //load TH0
+  10   1        TR0=1;               //turn on T0
+  11   1        while(TF0==0);       // wait for flag generation
+  12   1          TR0=0;             // turn off T0
+  13   1          TF0=0;             // clear TF0
+  14   1      }
+  15          
+  16          void buzzer_sound(int c, unsigned char j, unsigned char k)
+  17          {
+  18   1        int i;
+  19   1        for(i = 0; i<c; i++)  //to play sound
+  20   1          {
+  21   2            buzzer = 1;
+  22   2            delay(j,k);
+  23   2            buzzer = 0;
+  24   2            delay(j,k);
+  25   2          }
+  26   1      }
+  27          
+  28          void UART_init(void)
+  29          {
+  30   1        TMOD = 0x20;    // Timer 1 8-bit auto reload mode
+  31   1        TH1 = 0xFD;     //baud rate 9600
+  32   1        SCON = 0x50;    //8-bit UART
+  33   1        
+  34   1        TR1 = 1;
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     77    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

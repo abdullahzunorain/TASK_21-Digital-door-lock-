@@ -1,0 +1,220 @@
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:40:39 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE EEPROM
+OBJECT MODULE PLACED IN .\Objects\eeprom.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE eeprom.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ee
+                    -prom.lst) TABS(2) OBJECT(.\Objects\eeprom.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include "main.h"
+   3          //ddelay for I2c
+   4          #define I2C_ddelay    50
+   5          //Define Led Toggle Time
+   6          #define TOGGLE_LED  20000
+   7          //control address of 24lc64
+   8          #define device_addr 0xA0
+   9          #define ACK_BIT    0
+  10          //Define the Pin for the I2c and lec
+  11          
+  12          /*=========================================
+  13             Prototypes for I2c functions
+  14           ==========================================*/
+  15          
+  16          /*=========================================
+  17             Definition of I2c functions
+  18           ==========================================*/
+  19          /**
+  20          \brief of  ddelay function.
+  21          This function provide the ddelay which is used in clock generation.
+  22          */
+  23          void ddelay(unsigned int d)
+  24          {
+  25   1          unsigned int i;
+  26   1          for(i=0; i<d; i++);
+  27   1      }
+  28          /**
+  29          \brief of InitI2c function.
+  30          This function  use to make the data line and clock line idle to put the both line high
+  31          */
+  32          void InitI2c(void)
+  33          {
+  34   1          SDA_BUS =1;
+  35   1          SCL_BUS =1;
+  36   1      }
+  37          /**
+  38          \brief of StartI2c function.
+  39          This function performs the start operation to initiate the communication.
+  40          */
+  41          void StartI2c(void)
+  42          {
+  43   1          SDA_BUS  = 1;
+  44   1          SCL_BUS  = 1;
+  45   1          ddelay(I2C_ddelay);
+  46   1          SDA_BUS  = 0;
+  47   1          ddelay(I2C_ddelay);
+  48   1      }
+  49          /**
+  50          \brief of void RepeatedStartI2c function.
+  51          When master does not want to relaese the control from the bus then it assert the repeated
+  52          start condition on the i2c bus.
+  53          */
+  54          void RepeatedStartI2c()
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:40:39 PAGE 2   
+
+  55          {
+  56   1          SCL_BUS  = 0;
+  57   1          ddelay(I2C_ddelay/2);
+  58   1          SDA_BUS  = 1;
+  59   1          ddelay(I2C_ddelay/2);
+  60   1          SCL_BUS  = 1;
+  61   1          ddelay(I2C_ddelay/2);
+  62   1          SDA_BUS  = 0;
+  63   1          ddelay(I2C_ddelay);
+  64   1      }
+  65          /**
+  66          \brief of void StopI2c function.
+  67          When master want to stop the communication then it will assert the stop condition to the i2c bus.
+  68          */
+  69          void StopI2c(void)
+  70          {
+  71   1          SCL_BUS  = 0;
+  72   1          ddelay(I2C_ddelay/2);
+  73   1          SDA_BUS  = 0;
+  74   1          ddelay(I2C_ddelay/2);
+  75   1          SCL_BUS  = 1;
+  76   1          ddelay(I2C_ddelay/2);
+  77   1          SDA_BUS  = 1;
+  78   1          ddelay(I2C_ddelay);
+  79   1      }
+  80          /**
+  81          \brief of  SendAckBit function.
+  82          This function use to send the acknoledgement(ACK) bit the i2c bus.
+  83          */
+  84          void SendAckBit()
+  85          {
+  86   1          SCL_BUS  = 0;
+  87   1          ddelay(I2C_ddelay/2);
+  88   1          SDA_BUS  = 0;
+  89   1          ddelay(I2C_ddelay/2);
+  90   1          SCL_BUS  = 1;
+  91   1          ddelay(I2C_ddelay);
+  92   1      }
+  93          /**
+  94          \brief of  SendNackBit function.
+  95          This function use to send the Non-acknoledgement(NACK) bit the i2c bus.
+  96          */
+  97          void SendNackBit(void)
+  98          {
+  99   1          SCL_BUS  = 0;
+ 100   1          ddelay(I2C_ddelay/2);
+ 101   1          SDA_BUS  = 1;
+ 102   1          ddelay(I2C_ddelay/2);
+ 103   1          SCL_BUS  = 1;
+ 104   1          ddelay(I2C_ddelay);
+ 105   1      }
+ 106          /**
+ 107          \brief of write_i2c function.
+ 108          This function use to send signle byte to the I2C Data Bus
+ 109          */
+ 110          bit write_i2c(unsigned char byte)
+ 111          {
+ 112   1          unsigned char i;
+ 113   1          for(i=0; i<8; i++)
+ 114   1          {
+ 115   2              SCL_BUS  = 0;
+ 116   2              ddelay(I2C_ddelay);
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:40:39 PAGE 3   
+
+ 117   2              if((byte<<i)&0x80)
+ 118   2                  SDA_BUS  = 1;
+ 119   2              else
+ 120   2                  SDA_BUS  = 0;
+ 121   2              ddelay(I2C_ddelay/2);
+ 122   2              SCL_BUS  = 1;
+ 123   2              ddelay(I2C_ddelay);
+ 124   2          }
+ 125   1      //ack from slave //
+ 126   1          SCL_BUS  = 0;
+ 127   1          SDA_BUS  = 0;
+ 128   1          ddelay(I2C_ddelay/2);
+ 129   1          SCL_BUS  = 1;
+ 130   1          ddelay(I2C_ddelay);
+ 131   1          return SDA_BUS;
+ 132   1      }
+ 133          /**
+ 134          \brief of write_i2c function.
+ 135          This function use to read the data from the I2C data bus
+ 136          */
+ 137          unsigned char read_i2c(void)
+ 138          {
+ 139   1          unsigned char i,d, rxdata=0;
+ 140   1          for(i=0; i<8; i++)
+ 141   1          {
+ 142   2              SCL_BUS  = 0;
+ 143   2              SDA_BUS  = 1;
+ 144   2              ddelay(I2C_ddelay);
+ 145   2              SCL_BUS  = 1;
+ 146   2              ddelay(I2C_ddelay/2);
+ 147   2              d=SDA_BUS;
+ 148   2              rxdata=rxdata|(d<<7-i);
+ 149   2              ddelay(I2C_ddelay);
+ 150   2          }
+ 151   1          return rxdata;
+ 152   1      }
+ 153          /**
+ 154          \brief of write_byte_to_eeprom function.
+ 155          This function use to single byte the eeprom at desire address
+ 156          *///Write Data to eeprom memory
+ 157          void write_byte_to_eeprom(unsigned int addr,unsigned char byte)
+ 158          {
+ 159   1          StartI2c();
+ 160   1          while(write_i2c(device_addr|0)==1)
+ 161   1          {
+ 162   2              StartI2c();
+ 163   2          }
+ 164   1          write_i2c(addr>>8);
+ 165   1          write_i2c((unsigned char)addr);
+ 166   1          write_i2c(byte);
+ 167   1          StopI2c();
+ 168   1      }
+ 169          /**
+ 170          \brief of read_byte_from_eeprom function.
+ 171          This function use to read the data byte from eeprom at the desire the address
+ 172          */
+ 173          unsigned char read_byte_from_eeprom(unsigned int addr)
+ 174          {
+ 175   1          unsigned char rxdata =0;
+ 176   1          StartI2c();
+ 177   1          while(write_i2c(device_addr|0)==1)
+ 178   1          {
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/24/2024 11:40:39 PAGE 4   
+
+ 179   2              StartI2c();
+ 180   2          }
+ 181   1          write_i2c(addr>>8);
+ 182   1          write_i2c((unsigned char)addr);
+ 183   1          RepeatedStartI2c();
+ 184   1          write_i2c(device_addr|1);
+ 185   1          rxdata=read_i2c();
+ 186   1          SendNackBit();
+ 187   1          StopI2c() ;
+ 188   1          return rxdata;
+ 189   1      }
+ 190          // Main function
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    326    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

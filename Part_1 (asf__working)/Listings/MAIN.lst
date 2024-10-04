@@ -1,0 +1,291 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              09/24/2024 11:19:05 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\MAIN.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE MAIN.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\MAIN.lst) TABS(2) OBJECT(.\Objects\MAIN.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include "eeprom.h"
+   3          #include "LCD.h"
+   4          #include "KEYPAD.h"
+   5          
+   6          #define generate_password 0
+   7          #define enter_password 1
+   8          #define wrong_password 2
+   9          #define new_password 3
+  10          
+  11          unsigned char gent_password[6];
+  12          unsigned char j=0,value,i=0;
+  13          unsigned char data_read,second=10,Flag=0,Flag1=0;
+  14          unsigned char password[6];
+  15          unsigned char EEPROM_password,user_pin;
+  16          unsigned char old_pin,key;
+  17          unsigned char user_password[6];
+  18          unsigned char EEPROM[6];
+  19          unsigned char EEPROM_Pass;
+  20          unsigned char old_password[6];
+  21          
+  22          
+  23          
+  24          unsigned int on_period , off_period;
+  25          sbit servomotor_pin = P2^0;
+  26          
+  27          
+  28          void timer_init ()
+  29          {
+  30   1        TMOD=0x01;
+  31   1        TH0=0xB7;
+  32   1        TL0=0xFE;
+  33   1        TR0=1;
+  34   1        EA=1;
+  35   1        ET0=1;
+  36   1        
+  37   1      }
+  38          void timer0 () interrupt 1
+  39          {
+  40   1        servomotor_pin = ~servomotor_pin;
+  41   1        if(servomotor_pin)
+  42   1        {
+  43   2          TH0= on_period >> 8;
+  44   2          TL0= on_period ;
+  45   2        }
+  46   1        else
+  47   1        {
+  48   2          TH0= off_period >> 8;
+  49   2          TL0= off_period ;
+  50   2        }
+  51   1      }
+  52          void set_duty_cycle (float angle)
+  53          {
+  54   1        float duty_cycle ;
+C51 COMPILER V9.60.7.0   MAIN                                                              09/24/2024 11:19:05 PAGE 2   
+
+  55   1        unsigned int period ;
+  56   1        duty_cycle= (angle / 180.0) * 10.0;
+  57   1        period = 65535-0xB7FE;
+  58   1        on_period=(unsigned int)((period/100.0)*duty_cycle);
+  59   1        off_period=period- on_period;
+  60   1        on_period=65535- on_period;
+  61   1        off_period=65535- off_period;
+  62   1      }
+  63          
+  64          void randompassword()
+  65          {
+  66   1        gent_password[j]= keypad ();
+  67   1        EEPROM_write(j,gent_password[j]);
+  68   1        lcd_showchar(1,j,gent_password[j]);
+  69   1        
+  70   1      }
+  71          
+  72          void main (void)
+  73          {
+  74   1        unsigned char current_state;
+  75   1        lcd_init();
+  76   1        timer_init();
+  77   1        current_state = generate_password;
+  78   1        while(1)
+  79   1        {
+  80   2          switch(current_state)
+  81   2          {
+  82   3            case generate_password :
+  83   3            value = EEPROM_read (212);  
+  84   3            if(value==0xFF)
+  85   3            {
+  86   4              lcd_showstring(0,0,"Generate Pin");
+  87   4              if(j<6)
+  88   4              {
+  89   5                randompassword();
+  90   5                j++;
+  91   5              }
+  92   4              else
+  93   4              {
+  94   5                EEPROM_write (212,0xAA);
+  95   5                j=0;
+  96   5                current_state=enter_password;
+  97   5                Timmer_Delay(3000);
+  98   5              }
+  99   4            }
+ 100   3            else
+ 101   3            {
+ 102   4              current_state= enter_password;
+ 103   4            }
+ 104   3            break;
+ 105   3            
+ 106   3            
+ 107   3            case enter_password :
+ 108   3              lcd_clear();
+ 109   3              data_read =EEPROM_read (254);
+ 110   3            if(data_read!= 6)
+ 111   3            {
+ 112   4              for(i=0; i<6; i++)
+ 113   4              {
+ 114   5                password[i]=EEPROM_read (i);
+ 115   5              }
+ 116   4              EEPROM_password= (password[5]*100000)+(password[4]*10000)+(password[3]*1000)+(password[2]*100)+(passwo
+C51 COMPILER V9.60.7.0   MAIN                                                              09/24/2024 11:19:05 PAGE 3   
+
+             -rd[1]*10)+(password[0]);
+ 117   4              lcd_showstring(0,0, "Enter Password");
+ 118   4              for(i=0; i<6; i++)
+ 119   4              {
+ 120   5                key=keypad ();
+ 121   5                if(key=='c')
+ 122   5                {
+ 123   6                  current_state= new_password;
+ 124   6                  break;
+ 125   6                }
+ 126   5                else
+ 127   5                {
+ 128   6                  user_password[i]=key;
+ 129   6                }
+ 130   5                lcd_showchar(1,i ,user_password[i]);
+ 131   5              
+ 132   5              }
+ 133   4              Delay1(2000);
+ 134   4              user_pin=(user_password[5]*100000)+(user_password[4]*10000)+(user_password[3]*1000)+(user_password[2]*
+             -100)+(user_password[1]*10)+(user_password[0]);
+ 135   4              if(current_state==new_password)
+ 136   4              {
+ 137   5                break;
+ 138   5              }
+ 139   4              if(EEPROM_password==user_pin)
+ 140   4              {
+ 141   5                lcd_clear();
+ 142   5                lcd_showstring(0,0,"Door Unlock");
+ 143   5                Beep(5);
+ 144   5                Delay1(1000);
+ 145   5                set_duty_cycle(0.0);
+ 146   5                Delay1(500);
+ 147   5                
+ 148   5                for(i=0; i<10; i++)
+ 149   5                {
+ 150   6                  second--;
+ 151   6                  lcd_shownum(1,6,second,1);
+ 152   6                  Timmer_Delay(160);
+ 153   6                }
+ 154   5                
+ 155   5                
+ 156   5                Beep(5);
+ 157   5                lcd_clear();
+ 158   5                lcd_showstring(0,0,"Door Lock");
+ 159   5                
+ 160   5                set_duty_cycle(180.0);
+ 161   5                Delay1(2000);
+ 162   5                
+ 163   5                lcd_clear();
+ 164   5                Flag=0;
+ 165   5                second=10;
+ 166   5                current_state=enter_password;
+ 167   5              }
+ 168   4              else
+ 169   4              {
+ 170   5                current_state= wrong_password;
+ 171   5              }
+ 172   4            }
+ 173   3            else
+ 174   3            {
+ 175   4              lcd_showstring(0,0,"System Disabled");
+ 176   4              Beep(5000);
+C51 COMPILER V9.60.7.0   MAIN                                                              09/24/2024 11:19:05 PAGE 4   
+
+ 177   4            }
+ 178   3            break;
+ 179   3            
+ 180   3            case wrong_password :
+ 181   3              if(Flag<5)
+ 182   3              {
+ 183   4                lcd_clear();
+ 184   4                lcd_showstring(0,0,"Wrong Password");
+ 185   4                lcd_shownum(1,5,Flag,1);
+ 186   4                Beep(10);
+ 187   4                Flag++;
+ 188   4                current_state= enter_password;
+ 189   4              }
+ 190   3              else
+ 191   3              {
+ 192   4                EEPROM_write (250, 6);
+ 193   4                lcd_clear();
+ 194   4                lcd_showstring(0,0,"System Disabled");
+ 195   4                Beep(5000);
+ 196   4                
+ 197   4              }
+ 198   3              break;
+ 199   3              
+ 200   3              
+ 201   3            case new_password :
+ 202   3                lcd_clear();
+ 203   3            lcd_showstring(0,0,"Enter Old Pin");
+ 204   3            for(i=0; i<6; i++)
+ 205   3            {
+ 206   4              EEPROM[i]=EEPROM_read(i);
+ 207   4            }
+ 208   3            EEPROM_Pass=(EEPROM[5]*100000)+(EEPROM[4]*10000)+(EEPROM[3]*1000)+(EEPROM[2]*100)+(EEPROM[1]*10)+(EEPRO
+             -M[0]);
+ 209   3            for(i=0; i<6; i++)
+ 210   3            {
+ 211   4              old_password[i]= keypad();
+ 212   4              lcd_showchar(1,i,old_password[i]);
+ 213   4            }
+ 214   3              Delay1(2000);
+ 215   3            old_pin=(old_password[5]*100000)+(old_password[4]*10000)+(old_password[3]*1000)+(old_password[2]*100)+(
+             -old_password[1]*10)+(old_password[0]);
+ 216   3            
+ 217   3            if( old_pin==EEPROM_Pass)
+ 218   3            {
+ 219   4              EEPROM_write (212, 0xFF);
+ 220   4              lcd_clear();
+ 221   4              current_state=generate_password;
+ 222   4              break;
+ 223   4            }
+ 224   3            else
+ 225   3            {
+ 226   4              if(Flag <3)
+ 227   4              {
+ 228   5                lcd_clear();
+ 229   5                lcd_showstring(0,0,"Wrong Password");
+ 230   5                lcd_shownum(1,5,Flag1,1);
+ 231   5                Beep(10);
+ 232   5                Flag1++;
+ 233   5                current_state = new_password;
+ 234   5              }
+ 235   4              else
+ 236   4              {
+C51 COMPILER V9.60.7.0   MAIN                                                              09/24/2024 11:19:05 PAGE 5   
+
+ 237   5                EEPROM_write (250, 6);
+ 238   5                lcd_clear();
+ 239   5                lcd_showstring(0,0,"System Disable");
+ 240   5                Beep(5000);
+ 241   5              }
+ 242   4            }
+ 243   3            break;
+ 244   3          }
+ 245   2        }
+ 246   1      }
+ 247          
+ 248          
+ 249          
+ 250          
+ 251          
+ 252          
+ 253          
+ 254          
+ 255          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1306    ----
+   CONSTANT SIZE    =    110    ----
+   XDATA SIZE       =     46       7
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,70 @@
+C51 COMPILER V9.60.7.0   SERVO_MOTOR                                                       09/19/2024 12:25:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SERVO_MOTOR
+OBJECT MODULE PLACED IN .\Objects\SERVO_MOTOR.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE SERVO_MOTOR.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\SERVO_MOTOR.lst) TABS(2) OBJECT(.\Objects\SERVO_MOTOR.obj)
+
+line level    source
+
+   1          #include "SERVO_MOTOR.h"
+   2          #include "LCD.h"
+   3          
+   4          unsigned int  ON_pulse, OFF_pulse; // Variables to store ON and OFF pulse durations for PWM
+   5          float duty_cycle;                 // Variable to store the duty cycle for PWM
+   6          
+   7          void Timer0_Intilization ()     // Function to initialize Timer0 for PWM generation
+   8          {
+   9   1          TMOD = 0x01;                // Timer0 in 16-bit mode 1 
+  10   1          TH0 = 0xB7;                 // Initial value for Timer0 High byte
+  11   1          TL0 = 0xFD;                 // Initial value for Timer0 Low byte
+  12   1          TR0 = 1;                    // Start Timer0
+  13   1          IE = 0x82;                  // Enable Timer0 interrupt
+  14   1      }
+  15          
+  16          void ISR_servo_moter() interrupt 1  // Timer0 Interrupt Service Routine (ISR) for PWM generation
+  17          { 
+  18   1          Servo_motor_Pin = ~Servo_motor_Pin ; // Toggle the servo motor control pin
+  19   1          
+  20   1          if (Servo_motor_Pin)
+  21   1          {
+  22   2              TH0 = ON_pulse >> 8;    // Set high byte for ON pulse duration
+  23   2              TL0 = ON_pulse;         // Set low byte for ON pulse duration
+  24   2          }
+  25   1          else
+  26   1          {
+  27   2              TH0 = OFF_pulse >> 8;   // Set high byte for OFF pulse duration
+  28   2              TL0 = OFF_pulse;        // Set low byte for OFF pulse duration
+  29   2          }
+  30   1      }
+  31          
+  32          void set_servomoter_position (float angle)  // Function to calculate ON and OFF pulse durations based on d
+             -uty cycle
+  33          {  
+  34   1          unsigned int Period;
+  35   1          duty_cycle = ((angle + 45)/180)*10;
+  36   1          Period = 65535 - 0xB7FD;                         // Total time period for PWM
+  37   1          
+  38   1          ON_pulse = ((Period / 100.0) * duty_cycle);   // Calculate ON pulse duration
+  39   1          OFF_pulse = Period - ON_pulse;               // Calculate OFF pulse duration
+  40   1          
+  41   1          ON_pulse = 65535 - ON_pulse;                  // Invert ON pulse duration
+  42   1          OFF_pulse = 65535 - OFF_pulse;               // Invert OFF pulse duration
+  43   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    177    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.7.0   SERVO_MOTOR                                                       09/19/2024 12:25:00 PAGE 2   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

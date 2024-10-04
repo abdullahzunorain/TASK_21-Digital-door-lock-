@@ -1,0 +1,435 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include       <reg52.h>
+   2          #include      <stdlib.h>
+   3          #include         "LCD.h"
+   4          #include      "EEPROM.h"
+   5          #include "SERVO_MOTOR.h"
+   6          #include     "KEY_PAD.h"
+   7          #include      "BUZZER.h"
+   8          
+   9          #define NEW_DEVICE    1                    //stats of door lock system
+  10          #define ENTER_PASS    2
+  11          #define DOOR_UNLOCKED 3
+  12          #define OLD_PASSWORD  4
+  13          #define NEW_PASS      5
+  14          #define DISABLED      6
+  15          #define RESET_STATE   7
+  16          
+  17          void main(void)
+  18          {
+  19   1        unsigned int c, reset      = 0;
+  20   1        unsigned int new_p         = 0;
+  21   1        unsigned int warning_count = 0;
+  22   1        unsigned int chnge_count   = 0;
+  23   1        unsigned int new_dev       = 0;
+  24   1        unsigned int Flag          = 0;
+  25   1        unsigned int l, count      = 0;
+  26   1        unsigned char  r_button, state;
+  27   1        unsigned long int PSW      = 0;
+  28   1        unsigned long int new_psw  = 0;
+  29   1        unsigned long int  default_psw;
+  30   1        unsigned long int       number;
+  31   1        unsigned long int min = 100000;
+  32   1        unsigned long int max = 999999;
+  33   1        
+  34   1        state = NEW_DEVICE;
+  35   1        
+  36   1        UART_init();
+  37   1        LCD_init();
+  38   1        EEPROM_Init();
+  39   1        
+  40   1        new_dev =        EEPROM_Read_byte(52, 0);
+  41   1        warning_count = EEPROM_Read_byte(100, 0);
+  42   1        chnge_count =   EEPROM_Read_byte(150, 0);
+  43   1      
+  44   1      //   disp_string(1, 2, "default password");
+  45   1      
+  46   1      //    default_psw = EEPROM_Read_4Bytes(0);
+  47   1      //    LCD_default_psw_display(2, 5, default_psw,6);
+  48   1          ms_delay(250);
+  49   1        
+  50   1      
+  51   1      
+  52   1        
+  53   1        while(1)
+  54   1        {
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 2   
+
+  55   2          r_button = READ_SWITCHES();
+  56   2            
+  57   2      
+  58   2      
+  59   2          switch(state)
+  60   2          {
+  61   3            case NEW_DEVICE:
+  62   3              number = min + rand() % (max - min + 1);
+  63   3            
+  64   3              EEPROM_Write_byte(new_dev, 52,0);
+  65   3              
+  66   3              Flag = EEPROM_Read_byte(52, 0);
+  67   3            
+  68   3              if(Flag == 0)
+  69   3              {
+  70   4                while(r_button != 'c')
+  71   4                {
+  72   5                  Flag = 1;
+  73   5                  new_dev = 1;
+  74   5                  r_button = READ_SWITCHES();
+  75   5                  
+  76   5                  EEPROM_Write_byte(Flag, 52, 0);
+  77   5            
+  78   5                  EEPROM_Write_4Bytes(number,0);
+  79   5                  default_psw = EEPROM_Read_4Bytes(0);
+  80   5                
+  81   5                  disp_string(1, 2, "default password");
+  82   5                  LCD_default_psw_display(2, 5, default_psw,6);
+  83   5          
+  84   5                  ms_delay(500);
+  85   5          
+  86   5                  serial_display_psw(default_psw,6);
+  87   5                  ms_delay(500);
+  88   5          
+  89   5                  while(TI == 0);
+  90   5                  TI = 0;
+  91   5                }
+  92   4              }
+  93   3              if(warning_count >= 5 || chnge_count >= 5)
+  94   3              {
+  95   4                state = DISABLED;
+  96   4              }
+  97   3              else 
+  98   3              {
+  99   4                state = ENTER_PASS;
+ 100   4                warning_count = 0;
+ 101   4                chnge_count = 0;
+ 102   4              
+ 103   4                EEPROM_Write_byte(warning_count, 100, 0);
+ 104   4                EEPROM_Write_byte(chnge_count,150,0);
+ 105   4                
+ 106   4                LCD_clear();
+ 107   4                r_button = 'n';
+ 108   4              }
+ 109   3            break;
+ 110   3            case ENTER_PASS:
+ 111   3              
+ 112   3              disp_string(1, 2, "enter password");
+ 113   3      
+ 114   3              set_servomoter_position(0.0);
+ 115   3              if (r_button != 'n')
+ 116   3              {
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 3   
+
+ 117   4                if(r_button >= '0' && r_button <= '9')
+ 118   4                {
+ 119   5                  if(count < 6)
+ 120   5                  {
+ 121   6                    PSW = PSW * 10 + (r_button - '0');
+ 122   6                    ms_delay(100);
+ 123   6                    LCD_disp_PSW(2, 5, PSW);
+ 124   6                  
+ 125   6                    count++;
+ 126   6                    
+ 127   6                  }
+ 128   5                }
+ 129   4                if(r_button == '=')
+ 130   4                {
+ 131   5                  if(PSW > 0)
+ 132   5                  {
+ 133   6                    default_psw = EEPROM_Read_4Bytes(0);
+ 134   6                    if(PSW == default_psw)
+ 135   6                    {
+ 136   7                      state = DOOR_UNLOCKED;
+ 137   7                      EEPROM_SDA = 0;
+ 138   7                      EEPROM_SCL = 0;
+ 139   7                      Timer0_Intilization();
+ 140   7                      LCD_clear();
+ 141   7                      buzzer_sound(500, 0xFF, 0xA3);
+ 142   7                      PSW = 0;
+ 143   7                      count = 0;
+ 144   7                    }
+ 145   6                    else
+ 146   6                    {
+ 147   7                      LCD_clear();
+ 148   7                      if(warning_count < 5)
+ 149   7                      {
+ 150   8                        warning_count++;
+ 151   8                      
+ 152   8                        EEPROM_Write_byte(warning_count, 100, 0); 
+ 153   8                        warning_count = EEPROM_Read_byte(100, 0);
+ 154   8                
+ 155   8                        disp_string(1, 5, "alert!");  
+ 156   8                        LCD_disp_numb(1, 2, warning_count, 1);
+ 157   8                        disp_string(1, 1, " ");
+ 158   8                        disp_string(2, 1, "wrong password");
+ 159   8                    
+ 160   8                        buzzer_sound(1000, 0xFF, 0xA3);
+ 161   8                        ms_delay(2000);
+ 162   8                        LCD_clear();
+ 163   8                        PSW = 0;
+ 164   8                        count = 0;
+ 165   8                      }
+ 166   7                      else if(warning_count >= 5)
+ 167   7                      {
+ 168   8                        state = DISABLED;
+ 169   8                        LCD_clear();
+ 170   8                        PSW = 0;
+ 171   8                        count = 0;
+ 172   8                      }
+ 173   7                    }
+ 174   6                  }
+ 175   5                  else
+ 176   5                  {
+ 177   6                    LCD_clear();
+ 178   6                    disp_string(1, 6, "ERROR");
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 4   
+
+ 179   6                    disp_string(2, 3, "EMPTY PASS");
+ 180   6                    ms_delay(1000);
+ 181   6                    LCD_clear();
+ 182   6                    count = 0;
+ 183   6                    PSW = 0;
+ 184   6                  }
+ 185   5                }
+ 186   4                if(r_button == 'N')
+ 187   4                {
+ 188   5                  state = OLD_PASSWORD;
+ 189   5                  new_p = 1;
+ 190   5                  LCD_clear();
+ 191   5                  count = 0;
+ 192   5                  new_p = 1;
+ 193   5                  PSW = 0;
+ 194   5                }
+ 195   4                else if(r_button == 'R')
+ 196   4                {
+ 197   5                  state = OLD_PASSWORD;
+ 198   5                  LCD_clear();
+ 199   5                  reset = 1;
+ 200   5                  count = 0;
+ 201   5                  PSW = 0;
+ 202   5                }
+ 203   4              }
+ 204   3            break;
+ 205   3              
+ 206   3            case DOOR_UNLOCKED:
+ 207   3              disp_string(1,1,"DOOR UNLOCKED");
+ 208   3              set_servomoter_position(180.0);
+ 209   3              ms_delay(1000);
+ 210   3              
+ 211   3              LCD_clear();
+ 212   3              disp_string(1,1,"LOCKING DOOR IN");
+ 213   3            
+ 214   3              for(l=5; l>0; l--)
+ 215   3              {
+ 216   4                LCD_disp_numb(2, 8, l, 1);
+ 217   4                ms_delay(1000);
+ 218   4              }
+ 219   3              ms_delay(300);
+ 220   3              
+ 221   3              LCD_clear();
+ 222   3              buzzer_sound(1000,0xFF,0xA3);
+ 223   3              disp_string(1,3,"DOOR LOCKED");
+ 224   3              set_servomoter_position(0.0);
+ 225   3              ms_delay(500);
+ 226   3              
+ 227   3              LCD_clear();
+ 228   3              state = ENTER_PASS;
+ 229   3            break;
+ 230   3              
+ 231   3            case OLD_PASSWORD:
+ 232   3              disp_string(1, 2, "enter old passw");
+ 233   3              if (r_button != 'n')
+ 234   3              {
+ 235   4                if(r_button >= '0' && r_button <= '9')
+ 236   4                {
+ 237   5                  if(count < 6)
+ 238   5                  {
+ 239   6                    PSW = PSW * 10 + (r_button - '0');
+ 240   6                    ms_delay(100);
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 5   
+
+ 241   6                    LCD_disp_PSW(2, 5, PSW);
+ 242   6                  
+ 243   6                    count++;
+ 244   6                    
+ 245   6                  }
+ 246   5                }
+ 247   4                if(r_button == '=')
+ 248   4                {
+ 249   5                  default_psw = EEPROM_Read_4Bytes(0);
+ 250   5                  if(PSW == default_psw && new_p == 1)
+ 251   5                  {
+ 252   6                    state = NEW_PASS;
+ 253   6                    new_p = 0;
+ 254   6                    LCD_clear();
+ 255   6                    buzzer_sound(1000, 0xFF, 0xA3);
+ 256   6                    PSW = 0;
+ 257   6                    count = 0;
+ 258   6                  }
+ 259   5                  else if(PSW == default_psw && reset == 1)
+ 260   5                  {
+ 261   6                    state = RESET_STATE;
+ 262   6                    reset = 0;
+ 263   6                    LCD_clear();
+ 264   6                    PSW = 0;
+ 265   6                    count = 0;
+ 266   6                  }
+ 267   5                  else
+ 268   5                  {
+ 269   6                    LCD_clear();
+ 270   6                    if(chnge_count <= 5)
+ 271   6                    {
+ 272   7                      chnge_count++;
+ 273   7                      
+ 274   7                      EEPROM_Write_byte(chnge_count,150,0);
+ 275   7                      chnge_count = EEPROM_Read_byte(150,0);
+ 276   7                      
+ 277   7                      disp_string(1, 1, "wrong-password");
+ 278   7                      disp_string(2, 5, "C");
+ 279   7                      
+ 280   7                      LCD_disp_numb(2, 6, chnge_count, 1);
+ 281   7                      
+ 282   7                      for(c = 0; c < 3; c++)
+ 283   7                      {
+ 284   8                        buzzer_sound(500, 0xFF, 0xA3);
+ 285   8                        ms_delay(250);
+ 286   8                      }
+ 287   7                      ms_delay(500);
+ 288   7                      LCD_clear();
+ 289   7                      PSW = 0;
+ 290   7                      count = 0;
+ 291   7                    }
+ 292   6                    else if(chnge_count > 5)
+ 293   6                    {
+ 294   7                      state = DISABLED;
+ 295   7                      LCD_clear();
+ 296   7                      PSW = 0;
+ 297   7                      count = 0;
+ 298   7                    }
+ 299   6                  }
+ 300   5                }
+ 301   4                if(r_button == 'c')
+ 302   4                {
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 6   
+
+ 303   5                  state = ENTER_PASS;
+ 304   5                  LCD_clear();
+ 305   5                  PSW = 0;
+ 306   5                  count = 0;
+ 307   5                }
+ 308   4              }
+ 309   3            break;
+ 310   3            case NEW_PASS:
+ 311   3              disp_string(1, 2, "enter new-passw");
+ 312   3              if (r_button != 'n')
+ 313   3              {
+ 314   4                if(r_button >= '0' && r_button <= '9')
+ 315   4                {
+ 316   5                  if(count < 6)
+ 317   5                  {
+ 318   6                    new_psw = new_psw * 10 + (r_button - '0');
+ 319   6                    ms_delay(100);
+ 320   6                    LCD_disp_PSW(2, 5, new_psw);
+ 321   6                    
+ 322   6                    count++;
+ 323   6                    
+ 324   6                  }
+ 325   5                }
+ 326   4                if(r_button == '=')
+ 327   4                {
+ 328   5                  LCD_disp_numb(2, 5, new_psw,6);
+ 329   5                  ms_delay(2000);
+ 330   5                  if(count == 6)
+ 331   5                  {       
+ 332   6                    ms_delay(500);
+ 333   6                    LCD_clear();
+ 334   6                    disp_string(1, 1, "changed password");
+ 335   6                    EEPROM_Write_4Bytes(new_psw, 0);
+ 336   6                    
+ 337   6                    ms_delay(2000);
+ 338   6                    state = ENTER_PASS;
+ 339   6                    LCD_clear();
+ 340   6                    count = 0;
+ 341   6                    new_psw = 0;
+ 342   6                  }
+ 343   5                  else if(count < 6)
+ 344   5                  {
+ 345   6                    LCD_clear();
+ 346   6                    disp_string(1, 1, "enter-6 digit");
+ 347   6                    ms_delay(2000);
+ 348   6                    count = 0;
+ 349   6                    new_psw = 0;
+ 350   6                  }
+ 351   5                }
+ 352   4              }
+ 353   3            break;
+ 354   3              
+ 355   3            case DISABLED:
+ 356   3              disp_string(1, 2, "DOOR DISABLED....");
+ 357   3              disp_string(2, 1, "PLZ REFER COMPNY");
+ 358   3              while(r_button != 'R')
+ 359   3              {
+ 360   4                buzzer_sound(5, 0xF0, 0x03);
+ 361   4                r_button = READ_SWITCHES();
+ 362   4              }
+ 363   3              if(r_button == 'R')
+ 364   3              {
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:25:00 PAGE 7   
+
+ 365   4                state = OLD_PASSWORD;
+ 366   4                reset = 1;
+ 367   4                LCD_clear();
+ 368   4              }
+ 369   3            break;
+ 370   3              
+ 371   3            case RESET_STATE:
+ 372   3              disp_string(1,3,"resetting..");
+ 373   3            
+ 374   3              EEPROM_erase_all();
+ 375   3              ms_delay(3000);
+ 376   3            
+ 377   3              Flag = 1;
+ 378   3              warning_count = 0;
+ 379   3              chnge_count = 0;
+ 380   3            
+ 381   3              EEPROM_Write_byte(Flag, 50,0);
+ 382   3              EEPROM_Write_byte(warning_count, 100, 0);
+ 383   3              EEPROM_Write_byte(chnge_count,150,0);
+ 384   3              
+ 385   3              ms_delay(500);
+ 386   3              disp_string(1, 3, "succesed..");
+ 387   3              ms_delay(1500);
+ 388   3            
+ 389   3              state = NEW_PASS;
+ 390   3              reset = 0;
+ 391   3              new_p = 0;
+ 392   3              LCD_clear();
+ 393   3            break;
+ 394   3            
+ 395   3            default:
+ 396   3              state = NEW_DEVICE;
+ 397   3          }
+ 398   2        }
+ 399   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2186    ----
+   CONSTANT SIZE    =    253    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      44
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

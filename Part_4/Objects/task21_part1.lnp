@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\LCD.obj",
+".\Objects\EEPROM.obj" 
+TO ".\Objects\task21_part1" 
+PRINT(".\Listings\task21_part1.m51") RAMSIZE(256) 

@@ -1,0 +1,97 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:27:30 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include <stdlib.h>
+   3          #include "LCD.h"
+   4          #include "EEPROM.h"
+   5           
+   6          
+   7          void serial_display_psw(unsigned int Number, unsigned char Length)
+   8          {
+   9   1          unsigned int divisor = 1;
+  10   1          unsigned char q;
+  11   1          unsigned int dig = 0;
+  12   1          unsigned int v;
+  13   1        
+  14   1          for (v = 1; v < Length; v++) {
+  15   2              divisor *= 10;
+  16   2          }
+  17   1      
+  18   1          for (q = 0; q < Length; q++) {
+  19   2              dig = (Number / divisor) % 10;
+  20   2              SBUF = dig + '0';
+  21   2              divisor /= 10;
+  22   2              ms_delay(100);
+  23   2          }
+  24   1      }
+  25          void main(void)
+  26          {
+  27   1        unsigned long int default_psw;
+  28   1        unsigned long int number;
+  29   1        
+  30   1        unsigned int min = 100000;
+  31   1        unsigned int max = 999999;
+  32   1        
+  33   1        srand(012345);
+  34   1        
+  35   1        number = min + rand() % (max - min + 1);
+  36   1        
+  37   1        TMOD = 0x20;    // Timer 1 8-bit auto reload mode
+  38   1        TH1 = 0xFD;     //baud rate 9600
+  39   1        SCON = 0x50;    //8-bit UART
+  40   1        
+  41   1        TR1 = 1;
+  42   1        
+  43   1        LCD_init();
+  44   1        
+  45   1        EEPROM_Init();
+  46   1        
+  47   1        
+  48   1        EEPROM_Write_4Bytes(number,0);
+  49   1        
+  50   1        default_psw = EEPROM_Read_4Bytes(0);
+  51   1        
+  52   1        while(1)
+  53   1        {
+  54   2          set_cursor(1,1);
+C51 COMPILER V9.60.7.0   MAIN                                                              09/19/2024 12:27:30 PAGE 2   
+
+  55   2          disp_string("default password");
+  56   2          
+  57   2          set_cursor(2,5);
+  58   2          LCD_default_psw_display(default_psw,6);
+  59   2          
+  60   2          ms_delay(1000);
+  61   2          
+  62   2          serial_display_psw(default_psw,6);
+  63   2          ms_delay(2000);
+  64   2          
+  65   2          while(TI == 0);
+  66   2            TI = 0;
+  67   2          ms_delay(1000);
+  68   2      
+  69   2        }
+  70   1        
+  71   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    381    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----      20
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

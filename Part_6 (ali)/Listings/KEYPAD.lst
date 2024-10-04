@@ -1,0 +1,99 @@
+C51 COMPILER V9.60.7.0   KEYPAD                                                            09/19/2024 12:25:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEYPAD
+OBJECT MODULE PLACED IN .\Objects\KEYPAD.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE KEYPAD.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\KE
+                    -YPAD.lst) TABS(2) OBJECT(.\Objects\KEYPAD.obj)
+
+line level    source
+
+   1          //#include "KEY_PAD.h"
+   2          //#include "LCD.h"
+   3          
+   4          //unsigned char READ_SWITCHES(void)
+   5          //{
+   6          //  row_1 = 0; row_2 = 1; row_3 = 1; row_4 = 1;
+   7          //  if (C1 == 0) { ms_delay(100); while (C1==0); return '/'; } 
+   8          //  if (C2 == 0) { ms_delay(100); while (C2==0); return '9'; } 
+   9          //  if (C3 == 0) { ms_delay(100); while (C3==0); return '8'; } 
+  10          //  if (C4 == 0) { ms_delay(100); while (C4==0); return '7'; }
+  11          //  
+  12          //  row_1 = 1; row_2 = 0; row_3 = 1; row_4 = 1;
+  13          //  
+  14          //  if (C1 == 0) { ms_delay(100); while (C1==0); return 'x'; } 
+  15          //  if (C2 == 0) { ms_delay(100); while (C2==0); return '6'; } 
+  16          //  if (C3 == 0) { ms_delay(100); while (C3==0); return '5'; } 
+  17          //  if (C4 == 0) { ms_delay(100); while (C4==0); return '4'; }
+  18          //  
+  19          //  row_1 = 1; row_2 = 1; row_3 = 0; row_4 = 1;
+  20          //  
+  21          //  if (C1 == 0) { ms_delay(100); while (C1==0); return '-'; } 
+  22          //  if (C2 == 0) { ms_delay(100); while (C2==0); return '3'; } 
+  23          //  if (C3 == 0) { ms_delay(100); while (C3==0); return '2'; } 
+  24          //  if (C4 == 0) { ms_delay(100); while (C4==0); return '1'; }
+  25          //  
+  26          //  row_1 = 1; row_2 = 1; row_3 = 1; row_4 = 0;
+  27          //  
+  28          //  if (C1 == 0) { ms_delay(100); while (C1==0); return '+'; } 
+  29          //  if (C2 == 0) { ms_delay(100); while (C2==0); return '='; } 
+  30          //  if (C3 == 0) { ms_delay(100); while (C3==0); return '0'; } 
+  31          //  if (C4 == 0) { ms_delay(100); while (C4==0); return 'c'; }
+  32          //  return 'n';
+  33          //}
+  34          
+  35          ////void Disp_Error(unsigned int numb)           //displays differet error messages
+  36          ////{
+  37          ////  set_cursor(2,3);
+  38          ////  switch(numb)
+  39          ////  {
+  40          ////  case 0:   disp_string("INPUT ERROR");   break;
+  41          ////  case 1:   disp_string("FUNCN ERROR");   break;
+  42          ////  case 2:   disp_string("MATH ERROR");    break;
+  43          ////  default:    disp_string("MATH ERROR");  break;
+  44          ////  }
+  45          ////}
+  46          
+  47          ////unsigned char get_button_pressed(void)           //get key from user
+  48          ////{
+  49          ////  char key = 'n';              //assume no key pressed
+  50          
+  51          ////  while(key=='n')              //wait untill a key is pressed
+  52          ////    key = READ_SWITCHES();   //scan the keys again and again
+  53          
+  54          ////  return key;                  //when key pressed then return its value
+C51 COMPILER V9.60.7.0   KEYPAD                                                            09/19/2024 12:25:00 PAGE 2   
+
+  55          ////}
+  56          
+  57          ////unsigned int get_number_pressed(unsigned char ch)         //convert char into int
+  58          ////{
+  59          ////  switch(ch)
+  60          ////  {
+  61          ////    case '0': return 0; break;
+  62          ////    case '1': return 1; break;
+  63          ////    case '2': return 2; break;
+  64          ////    case '3': return 3; break;
+  65          ////    case '4': return 4; break;
+  66          ////    case '5': return 5; break;
+  67          ////    case '6': return 6; break;
+  68          ////    case '7': return 7; break;
+  69          ////    case '8': return 8; break;
+  70          ////    case '9': return 9; break;
+  71          ////    default: return 0;
+  72          ////  }
+  73          ////}
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

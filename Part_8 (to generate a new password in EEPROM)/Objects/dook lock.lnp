@@ -1,0 +1,6 @@
+".\Objects\EEPROM.obj",
+".\Objects\Keypad.obj",
+".\Objects\LCD.obj",
+".\Objects\main.obj" 
+TO ".\Objects\dook lock" 
+PRINT(".\Listings\dook lock.m51") RAMSIZE(256) 

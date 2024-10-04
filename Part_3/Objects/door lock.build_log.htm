@@ -1,0 +1,46 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: µVision V5.38.0.0
+Copyright (C) 2022 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Abdullah Zunorain, chipsoul, LIC=ZBD7S-L4PNV-4FJI9-4QSKY-EKBDU-E9B4S
+ 
+Tool Versions:
+Toolchain:       PK51 Prof. Developers Kit  Version: 9.60.7.0
+Toolchain Path:  C:\Keil_v5\C51\BIN
+C Compiler:      C51.exe V9.60.7.0
+Assembler:       A51.exe V8.2.7.0
+Linker/Locator:  BL51.exe V6.22.4.0
+Library Manager: LIB51.exe V4.30.1.0
+Hex Converter:   OH51.exe V2.7.0.0
+CPU DLL:         S8051.DLL V3.125.1.0
+Dialog DLL:      DP51.DLL V2.69.0.0 
+<h2>Project:</h2>
+C:\Users\chip soul\Desktop\TASKS_STC_89C52-RC\TASK_21\Part_3\door lock.uvproj
+Project File Date:  09/18/2024
+
+<h2>Output:</h2>
+Rebuild target 'Target 1'
+compiling main.c...
+main.c(95): error C267: 'Timmer_Delay': requires ANSI-style prototype
+compiling LCD.c...
+LCD.c(25): warning C206: '_nop_': missing function-prototype
+LCD.c(25): error C264: intrinsic '_nop_': declaration/activation error
+LCD.c(30): error C231: 'P0': redefinition
+LCD.c(38): error C231: 'P0': redefinition
+LCD.c(46): error C211: call not to a function
+LCD.c(46): error C208: 'function': too many actual parameters
+LCD.c(56): error C211: call not to a function
+LCD.c(56): error C208: 'function': too many actual parameters
+compiling keypad.c...
+compiling eeprom.c...
+eeprom.c(2): warning C318: can't open file 'i2c.h'
+eeprom.c(7): error C141: syntax error near ')', expected '<id>'
+eeprom.c(7): error C236: '_EEPROM_write': different length of parameter lists
+Target not created.
+Build Time Elapsed:  00:00:00
+</pre>
+</body>
+</html>

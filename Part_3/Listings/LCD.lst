@@ -1,0 +1,91 @@
+C51 COMPILER V9.60.7.0   LCD                                                               09/18/2024 12:40:49 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\LCD.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LCD.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LCD.l
+                    -st) TABS(2) OBJECT(.\Objects\LCD.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include "LCD.h"
+   3          #include <string.h>
+   4          
+   5          #define lcd_data P0
+   6          sbit RW = P2^5;
+   7          sbit RS = P2^6;
+   8          sbit EN = P2^7;
+   9          
+  10          
+  11          
+  12          
+  13          void lcd_init() {
+  14   1          lcd_command(0x38); // 8-bit mode, 2 lines, 5x7 dots
+  15   1          lcd_command(0x0C); // Display ON, cursor OFF
+  16   1          lcd_command(0x01); // Clear display
+  17   1          lcd_command(0x80); // Set cursor to home position
+  18   1      }
+  19          
+  20          void lcd_command(unsigned char cmd) {
+  21   1          RS = 0;
+  22   1          RW = 0;
+  23   1          lcd_data = cmd;
+  24   1          EN = 1;
+  25   1          _nop_();
+*** WARNING C206 IN LINE 25 OF LCD.c: '_nop_': missing function-prototype
+*** ERROR C264 IN LINE 25 OF LCD.c: intrinsic '_nop_': declaration/activation error
+  26   1          EN = 0;
+  27   1          _nop_();
+  28   1      }
+  29          
+  30          void lcd_data(unsigned char dat) {
+*** ERROR C231 IN LINE 30 OF LCD.c: 'P0': redefinition
+  31   1          RS = 1;
+  32   1          RW = 0;
+  33   1          lcd_data = dat;
+  34   1          EN = 1;
+  35   1          _nop_();
+  36   1          EN = 0;
+  37   1          _nop_();
+  38   1      }
+*** ERROR C231 IN LINE 38 OF LCD.c: 'P0': redefinition
+  39          
+  40          void lcd_showchar(unsigned char row, unsigned char column, unsigned char char_data) {
+  41   1          if (row == 0) {
+  42   2              lcd_command(0x80 + column);
+  43   2          } else if (row == 1) {
+  44   2              lcd_command(0xC0 + column);
+  45   2          }
+  46   1          lcd_data(char_data);
+*** ERROR C211 IN LINE 46 OF LCD.c: call not to a function
+*** ERROR C208 IN LINE 46 OF LCD.c: 'function': too many actual parameters
+  47   1      }
+  48          
+C51 COMPILER V9.60.7.0   LCD                                                               09/18/2024 12:40:49 PAGE 2   
+
+  49          void lcd_showstring(unsigned char row, unsigned char column, unsigned char *str) {
+  50   1          if (row == 0) {
+  51   2              lcd_command(0x80 + column);
+  52   2          } else if (row == 1) {
+  53   2              lcd_command(0xC0 + column);
+  54   2          }
+  55   1          while (*str) {
+  56   2              lcd_data(*str++);
+*** ERROR C211 IN LINE 56 OF LCD.c: call not to a function
+*** ERROR C208 IN LINE 56 OF LCD.c: 'function': too many actual parameters
+  57   2          }
+  58   1      }
+  59          
+  60          void lcd_shownum(unsigned char row, unsigned char column, unsigned int num, unsigned char length) {
+  61   1          char buffer[10];
+  62   1          sprintf(buffer, "%0*d", length, num);
+  63   1          lcd_showstring(row, column, buffer);
+  64   1      }
+  65          
+  66          void lcd_clear() {
+  67   1          lcd_command(0x01); // Clear display
+  68   1          lcd_command(0x80); // Set cursor to home position
+  69   1      }
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  7 ERROR(S)

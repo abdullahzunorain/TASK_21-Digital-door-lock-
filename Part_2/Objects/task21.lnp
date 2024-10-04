@@ -1,0 +1,7 @@
+".\Objects\STARTUP.obj",
+".\Objects\gd.obj",
+".\Objects\lcd.obj",
+".\Objects\keypaid.obj",
+".\Objects\eeprom.obj" 
+TO ".\Objects\task21" 
+PRINT(".\Listings\task21.m51") RAMSIZE(256) 

@@ -1,0 +1,190 @@
+C51 COMPILER V9.60.7.0   LCD                                                               09/24/2024 11:43:33 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\LCD.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LCD.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\LCD.l
+                    -st) TABS(2) OBJECT(.\Objects\LCD.obj)
+
+line level    source
+
+   1          # include <reg52.h>
+   2          # include "LCD.h"
+   3          # include "Keypad.h"
+   4          #define LCD_DATAPORT P0
+   5          
+   6          sbit RW=P2^5;                                    
+   7          sbit RS=P2^6;                                    
+   8          sbit EN=P2^7;                                   
+   9          sbit DB4=P0^4;                               
+  10          sbit DB5=P0^5;
+  11          sbit DB6=P0^6;
+  12          sbit DB7=P0^7;
+  13          
+  14          void Delay (unsigned int value)        
+  15          {
+  16   1       unsigned int j;
+  17   1           
+  18   1        for (j=0; j<value ;j++)
+  19   1        {  
+  20   2          
+  21   2          TH0=0xFC;
+  22   2          TL0=0x64;
+  23   2          TF0=0;
+  24   2          TR0=1;
+  25   2          while(TF0==0);
+  26   2          TF0=0;
+  27   2          TR0=0;
+  28   2        }
+  29   1      }
+  30          
+  31          void Timmer_Delay (unsigned char k )       
+  32          {
+  33   1       unsigned int j;
+  34   1           
+  35   1        for (j=0; j<k ;j++)
+  36   1        {  
+  37   2          
+  38   2          TH1=0x4B;
+  39   2          TL1=0xFD;
+  40   2          TF1=0;
+  41   2          TR1=1;
+  42   2          while(TF1==0);
+  43   2          TF1=0;
+  44   2          TR1=0;
+  45   2        }
+  46   1      }
+  47          
+  48          
+  49          //LCD Write Function
+  50          
+  51          void LCD4_write ( unsigned char Value)
+  52            {  
+  53   1          //In this Case Byte are divide into two Nibbles,First low nibble is passed and then Highly Nibble is tra
+             -nsfred
+C51 COMPILER V9.60.7.0   LCD                                                               09/24/2024 11:43:33 PAGE 2   
+
+  54   1          //Nibble are Anded(Gate) with pins with below mentioned Value(By making each pin High) One by one
+  55   1          
+  56   1          DB4=0x10 & Value;            //Value (Command Or Data are and with 0x10) first Pin          
+  57   1          DB5=0x20 & Value;            //Value (Command Or Data are and with 0x20) second Pin  
+  58   1          DB6=0x40 & Value;            //Value (Command Or Data are and with 0x40) Third Pin  
+  59   1          DB7=0x80 & Value;            //Value (Command Or Data are and with 0x80) Fourth Pin  
+  60   1                        
+  61   1          EN=1;
+  62   1          Delay(4);                   
+  63   1          EN=0;                      
+  64   1         
+  65   1        }
+  66            
+  67          
+  68            
+  69          // LCD Command Function
+  70          void LCD_Command (unsigned char cmd)
+  71          { 
+  72   1        RS=0;                           
+  73   1        RW=0;                          
+  74   1        LCD4_write(cmd & 0xF0);         
+  75   1        LCD4_write( cmd <<4 );         
+  76   1      }
+  77          
+  78          
+  79          // LCD Data Function
+  80          void LCD_Data (unsigned char Data)
+  81          { 
+  82   1        RS=1;                          
+  83   1        RW=0;                         
+  84   1        LCD4_write ( Data & 0xF0);
+  85   1        LCD4_write (Data <<4 );
+  86   1        
+  87   1      }
+  88          
+  89          
+  90          // Intilization OF LCD
+  91          void LCD_Intialization(void)
+  92          {  
+  93   1                                                 
+  94   1         Delay(100);
+  95   1          LCD_Command(0x02);  //initilize the LCD in 4bit Mode
+  96   1         LCD_Command(0x28);
+  97   1         LCD_Command(0x0C); 
+  98   1         LCD_Command(0x01);  
+  99   1         LCD_Command(0x80); 
+ 100   1      }
+ 101          
+ 102          
+ 103          // Set Cursor function (Enter the coloum ond Row, the Cursor position is on that point)
+ 104          
+ 105           void Set_cursor(int row, int coloum)
+ 106           {      
+ 107   1         if(row==1)                                         
+ 108   1            {   LCD_Command(0x80+coloum); }                  
+ 109   1            else if(row==2)                                  
+ 110   1            {   LCD_Command(0xC0+coloum); }                
+ 111   1       
+ 112   1       
+ 113   1       }
+ 114          
+ 115          
+C51 COMPILER V9.60.7.0   LCD                                                               09/24/2024 11:43:33 PAGE 3   
+
+ 116           
+ 117          //LCD Erasing
+ 118           
+ 119          void LCD_Clear()
+ 120           { 
+ 121   1            LCD_Command(0x01);
+ 122   1       }
+ 123           int lcd_Pow(int X,int Y)
+ 124          {
+ 125   1        unsigned char i;
+ 126   1        int Result=1;
+ 127   1        for(i=0;i<Y;i++)
+ 128   1        {
+ 129   2          Result*=X;
+ 130   2        }
+ 131   1        return Result;
+ 132   1      }
+ 133          
+ 134          //Set Cursor, Passing Number and its Length,
+ 135          void LCD_ShowNum(unsigned char Line,unsigned char Column,unsigned int Number,unsigned char Length)
+ 136          {
+*** WARNING C235 IN LINE 136 OF LCD.c: parameter 3: different types
+ 137   1        unsigned char i;
+ 138   1        Set_cursor(Line,Column);                    
+ 139   1        for(i=Length;i>0;i--)                        
+ 140   1        {
+ 141   2          LCD_Data(Number/lcd_Pow(10,i-1)%10+'0');   
+ 142   2        }
+ 143   1      }
+ 144          
+ 145          void LCD_ShowChar(unsigned char Line,unsigned char Column,unsigned char Char)
+ 146          {
+ 147   1        Set_cursor(Line,Column);
+ 148   1        LCD_Data(Char);
+ 149   1      }
+ 150          
+ 151          void LCD_ShowString(unsigned char Line,unsigned char Column,char *String)
+ 152          {
+ 153   1        unsigned char i;
+ 154   1        Set_cursor(Line,Column);
+ 155   1        for(i=0;String[i]!='\0';i++)
+ 156   1        {
+ 157   2          LCD_Data(String[i]);
+ 158   2        }
+ 159   1      }
+ 160          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    359    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      15
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,124 @@
+C51 COMPILER V9.60.7.0   LCD                                                               09/19/2024 12:27:30 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\LCD.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE LCD.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\LCD.lst) TABS(2) OBJECT(.\Objects\LCD.obj)
+
+line level    source
+
+   1          #include "LCD.h"
+   2          #include <stdio.h>
+   3          
+   4          unsigned int i = 0;
+   5          unsigned int j = 0;
+   6          unsigned int digit = 0;
+   7          unsigned int index = 0;
+   8          
+   9          void ms_delay(unsigned int x)
+  10          {
+  11   1        for(i=0; i<x; i++)
+  12   1          for(j=0; j<112; j++);
+  13   1      }
+  14          
+  15          void LCD_write_cmd(unsigned char cmd)
+  16          {
+  17   1        LCD_data = cmd;
+  18   1        
+  19   1        LCD_RS = 0;
+  20   1        LCD_WR = 0;
+  21   1        LCD_EN = 1;
+  22   1        ms_delay(10);
+  23   1        LCD_EN = 0;
+  24   1        ms_delay(10);
+  25   1      }
+  26          void LCD_write_data(unsigned char d)
+  27          {
+  28   1        LCD_data = d;
+  29   1        LCD_RS = 1;
+  30   1        LCD_WR = 0;
+  31   1        
+  32   1        LCD_EN = 1;
+  33   1        ms_delay(10);
+  34   1        LCD_EN = 0;
+  35   1        ms_delay(10);
+  36   1      }
+  37          void LCD_clear()
+  38          {
+  39   1        LCD_write_cmd(0x01);    // Clear display and set DDRAM address 0x00
+  40   1        ms_delay(10);
+  41   1      }
+  42          
+  43          void LCD_init(void)
+  44          {
+  45   1        LCD_write_cmd(0x38);      // 8-bit, 2-line display, 5x8 font
+  46   1        ms_delay(10);
+  47   1        
+  48   1        LCD_clear();
+  49   1        ms_delay(10);
+  50   1        
+  51   1        LCD_write_cmd(0x06);
+  52   1        ms_delay(10);
+  53   1        
+  54   1        LCD_write_cmd(0x0C);      // Display on, cursor off, blink off
+C51 COMPILER V9.60.7.0   LCD                                                               09/19/2024 12:27:30 PAGE 2   
+
+  55   1        ms_delay(10);
+  56   1      }
+  57          
+  58          void set_cursor(unsigned int row, unsigned int col)
+  59          {
+  60   1        if(row == 1)
+  61   1        {
+  62   2          LCD_write_cmd(0x80 | col-1);
+  63   2          ms_delay(10);
+  64   2        }
+  65   1        else if(row == 2)
+  66   1        {
+  67   2          LCD_write_cmd(0xC0 | ((col-1)+0x40));
+  68   2          ms_delay(10);
+  69   2        }
+  70   1      }
+  71          void disp_string(char name[])
+  72          {
+  73   1          int i = 0;
+  74   1          while (name[i] != '\0')
+  75   1          {
+  76   2              LCD_write_data(name[i]);
+  77   2              ms_delay(10);
+  78   2              i++;
+  79   2          }
+  80   1      }
+  81          
+  82          void LCD_default_psw_display(unsigned int Number, unsigned char Length)
+  83          {
+  84   1          unsigned int divisor = 1;
+  85   1          unsigned char q;
+  86   1          unsigned int dig = 0;
+  87   1          unsigned int v;
+  88   1      
+  89   1          for (v = 1; v < Length; v++) {
+  90   2              divisor *= 10;
+  91   2          }
+  92   1      
+  93   1          for (q = 0; q < Length; q++) {
+  94   2              dig = (Number / divisor) % 10;
+  95   2              LCD_write_data(dig + '0');
+  96   2              divisor /= 10;
+  97   2          }
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    373    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      8      10
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,11 @@
+".\Objects\task_21.obj",
+".\Objects\main.obj",
+".\Objects\BUZZER.obj",
+".\Objects\KEY_PAD.obj",
+".\Objects\KEYPAD.obj",
+".\Objects\SERVO_MOTOR.obj",
+".\Objects\LCD.obj",
+".\Objects\EEPTOM.obj",
+".\Objects\EEPROM.obj" 
+TO ".\Objects\door_lock" 
+PRINT(".\Listings\door_lock.m51") RAMSIZE(256) 

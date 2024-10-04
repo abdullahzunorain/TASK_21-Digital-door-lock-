@@ -1,0 +1,191 @@
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/19/2024 12:27:31 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE EEPROM
+OBJECT MODULE PLACED IN .\Objects\EEPROM.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE EEPROM.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\EEPROM.lst) TABS(2) OBJECT(.\Objects\EEPROM.obj)
+
+line level    source
+
+   1          
+   2          #include "EEPROM.h" 
+   3          #include "LCD.h"      
+   4          
+   5          unsigned long counter = 0;
+   6          
+   7          void us_delay(unsigned int k)
+   8          {
+   9   1        while(k--);
+  10   1      }
+  11          
+  12          
+  13          void EEPROM_Init(void)
+  14          {
+  15   1          EEPROM_SDA = 1;     // Set SDA high.
+  16   1          EEPROM_SCL = 1;     // Set SCL high.
+  17   1      }
+  18          
+  19          
+  20          void EEPROM_Start()
+  21          {
+  22   1          EEPROM_SCL = 0;   // Set SCL low.
+  23   1          us_delay(1);       // Small delay.
+  24   1          
+  25   1          EEPROM_SCL = 1;    // Set SCL high.
+  26   1          us_delay(1);        // Small delay.
+  27   1          
+  28   1          EEPROM_SDA = 0;    // Set SDA low to indicate the start condition.
+  29   1          us_delay(1);        // Small delay.
+  30   1          
+  31   1          EEPROM_SCL = 0;    // Set SCL low to prepare for data transfer.
+  32   1      }
+  33          
+  34          
+  35          void EEPROM_Stop(void)
+  36          {
+  37   1          EEPROM_SCL = 0;     // Set SCL low.
+  38   1          us_delay(1);         // Small delay.
+  39   1          
+  40   1          EEPROM_SDA = 0;     // Set SDA low to indicate the stop condition.
+  41   1          us_delay(1);      // Small delay.
+  42   1          
+  43   1          EEPROM_SCL = 1;     // Set SCL high.
+  44   1          us_delay(1);        // Small delay.
+  45   1          
+  46   1          EEPROM_SDA = 1;      // Set SDA high.
+  47   1      }
+  48          
+  49          
+  50          void EEPROM_ACK(void)
+  51          {
+  52   1          EEPROM_SDA = 0;     // Set SDA low to send ACK.
+  53   1          us_delay(1);        // Small delay.
+  54   1          
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/19/2024 12:27:31 PAGE 2   
+
+  55   1          EEPROM_SCL = 1;     // Set SCL high to acknowledge.
+  56   1          us_delay(1);        // Small delay.
+  57   1          
+  58   1          EEPROM_SCL = 0;       // Set SCL low.
+  59   1          EEPROM_SDA = 1;       // Set SDA high.
+  60   1      }
+  61          
+  62          
+  63          void EEPROM_nACK(void)
+  64          {
+  65   1          EEPROM_SDA = 1;     // Set SDA high to send NACK.
+  66   1          us_delay(1);         // Small delay.
+  67   1          
+  68   1          EEPROM_SCL = 1;     // Set SCL high.
+  69   1          us_delay(1);        // Small delay.
+  70   1          
+  71   1          EEPROM_SCL = 0;     // Set SCL low.
+  72   1          EEPROM_SDA = 1;     // Set SDA high.
+  73   1      }
+  74          
+  75          
+  76          void EEPROM_send(unsigned char Data)
+  77          {
+  78   1          unsigned char i;
+  79   1          for (i = 0; i < 8; i++)
+  80   1          {
+  81   2              EEPROM_SDA = Data & 0x80;   // Set SDA according to the MSB of 'Data'.
+  82   2              EEPROM_SCL = 1;              // Set SCL high to send the bit.
+  83   2              EEPROM_SCL = 0;            // Set SCL low to prepare for the next bit.
+  84   2              Data <<= 1;              // Shift 'Data' left to get the next bit.
+  85   2          }
+  86   1          EEPROM_ACK();            // Send ACK after sending the byte.
+  87   1      }
+  88          
+  89          
+  90          unsigned char EEPROM_Recev(void)
+  91          {
+  92   1          unsigned char i, Data = 0;
+  93   1          for (i = 0; i < 8; i++)
+  94   1          {
+  95   2              us_delay(1);         // Small delay to stabilize the data.
+  96   2              EEPROM_SCL = 1;       // Set SCL high to read the bit from SDA.
+  97   2              Data |= EEPROM_SDA;     // Read the bit and store it in 'Data'.
+  98   2              if (i < 7)
+  99   2                  Data <<= 1;        // Shift 'Data' left to make space for the next bit.
+ 100   2              EEPROM_SCL = 0;       // Set SCL low to prepare for the next bit.
+ 101   2          }
+ 102   1          return Data;            // Return the received byte.
+ 103   1      }
+ 104          
+ 105          
+ 106          void EEPROM_Write_byte(unsigned char Data, unsigned char adrs, unsigned char page)
+ 107          {
+ 108   1          EEPROM_Start();                     // Start EEPROM communication.
+ 109   1          
+ 110   1          EEPROM_send(0xA0 | (page << 1));    // Send device address with page.
+ 111   1          EEPROM_send(adrs);                   // Send the memory address to write.
+ 112   1          EEPROM_send(Data);                  // Send the data to be written.
+ 113   1          
+ 114   1          EEPROM_Stop();                    // Stop EEPROM communication.
+ 115   1          ms_delay(5);                      // Delay for EEPROM write cycle completion.
+ 116   1      }
+C51 COMPILER V9.60.7.0   EEPROM                                                            09/19/2024 12:27:31 PAGE 3   
+
+ 117          
+ 118          
+ 119          unsigned char EEPROM_Read_byte(unsigned char adrs, unsigned char page)
+ 120          {
+ 121   1          unsigned char Data;
+ 122   1          
+ 123   1          EEPROM_Start();                  // Start EEPROM communication.
+ 124   1          
+ 125   1          EEPROM_send(0xA0 | (page << 1));    // Send device address with page for writing.
+ 126   1          EEPROM_send(adrs);                 // Send the memory address to read from.
+ 127   1          
+ 128   1          EEPROM_Start();                     // Restart EEPROM communication.
+ 129   1          
+ 130   1          EEPROM_send(0xA1 | (page << 1));      // Send device address with page for reading.
+ 131   1          Data = EEPROM_Recev();              // Receive the data from EEPROM.
+ 132   1          
+ 133   1          EEPROM_nACK();                       // Send NACK to end the read operation.
+ 134   1          EEPROM_Stop();                      // Stop EEPROM communication.
+ 135   1          us_delay(10);                       
+ 136   1          
+ 137   1          return Data;                        // Return the read data.
+ 138   1      }
+ 139          
+ 140          void EEPROM_Write_4Bytes(unsigned long counterValue, unsigned char startingAddress)
+ 141          {
+ 142   1        unsigned int c;
+ 143   1          for (c = 0; c < 4; c++)
+ 144   1          {
+ 145   2              unsigned char byteValue = (counterValue >> (8 * c)) & 0xFF;
+ 146   2              EEPROM_Write_byte(byteValue, startingAddress + c, 0); // Starting address + i for consecutive memo
+             -ry locations
+ 147   2          }
+ 148   1      }
+ 149          
+ 150          
+ 151          unsigned long EEPROM_Read_4Bytes(unsigned char startingAddress)
+ 152          {
+ 153   1        unsigned int d;
+ 154   1          unsigned long counterValue = 0;
+ 155   1          for (d = 0; d < 4; d++)
+ 156   1          {
+ 157   2              unsigned char byteValue = EEPROM_Read_byte(startingAddress + d, 0); // Starting address + i for co
+             -nsecutive memory locations
+ 158   2              counterValue |= ((unsigned long)byteValue << (8 * d));
+ 159   2          }
+ 160   1          return counterValue;
+ 161   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    452    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4      16
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

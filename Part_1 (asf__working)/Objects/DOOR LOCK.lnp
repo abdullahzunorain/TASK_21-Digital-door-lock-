@@ -1,0 +1,6 @@
+".\Objects\MAIN.obj",
+".\Objects\LCD.obj",
+".\Objects\KEYPAD.obj",
+".\Objects\eeprom.obj" 
+TO ".\Objects\DOOR LOCK" 
+PRINT(".\Listings\DOOR LOCK.m51") RAMSIZE(256) 
