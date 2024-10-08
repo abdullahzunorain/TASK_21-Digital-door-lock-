@@ -1,5 +1,7 @@
 ## Task 21: Digital Door Lock System
 
+![](__door_lock.jpg)
+
 #### Overview
 Design a digital door lock system with the following features:
 1. **Keypad** for password input.
